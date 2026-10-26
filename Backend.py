@@ -15,8 +15,18 @@ def TTS(text: str, speaker: str, filename: str):
     if pathlib.Path(filename).exists():
         return
     try:
-        os.system(
-            f'tts --model_name tts_models/multilingual/multi-dataset/xtts_v2 --text "{text}" --speaker_wav ./Speakers/{speaker}.wav --language_idx en --use_cuda true --out_path "{filename}"'
+        import torch
+        from TTS.api import TTS as Synthesizer
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        synthesizer = Synthesizer(
+            "tts_models/multilingual/multi-dataset/xtts_v2"
+        ).to(device)
+        synthesizer.tts_to_file(
+            text=text,
+            speaker_wav=str(pathlib.Path("Speakers") / f"{speaker}.wav"),
+            language="en",
+            file_path=filename,
         )
     except:
         logging.error("An error occurred while executing the TTS command.")
